@@ -1,0 +1,306 @@
+{
+  "info": {
+    "name": "Pharma FX API Test Suite",
+    "_postman_id": "pharma-fx-api-test-suite-v1",
+    "description": "Manual API test collection for FDA Drug API and Frankfurter FX API.\n\nBusiness context:\n- FDA Drug API connects to Medicare Part D adherence analytics (Star Ratings, PDC)\n- Frankfurter FX API connects to GBM trade settlement analytics (FX mismatch is a documented settlement fail cause)\n\nAuthor: Akash Singh\nGitHub: https://github.com/aksingh-ops",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [],
+  "item": [
+    {
+      "name": "Frankfurter FX API",
+      "item": [
+        {
+          "name": "GET - FX Latest Rates (USD base)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{fx_base_url}}/latest?from={{base_currency}}",
+              "host": ["{{fx_base_url}}"],
+              "path": ["latest"],
+              "query": [{ "key": "from", "value": "{{base_currency}}" }]
+            },
+            "description": "Get latest exchange rates with USD as the base currency.\n\nExpected: 200 OK with rates object containing major currency pairs."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is under 2000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test('Response is JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "pm.test('Response has base, rates, and date fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('base');",
+                  "    pm.expect(json).to.have.property('rates');",
+                  "    pm.expect(json).to.have.property('date');",
+                  "});",
+                  "",
+                  "pm.test('Base currency is USD', function () {",
+                  "    pm.expect(pm.response.json().base).to.eql('USD');",
+                  "});",
+                  "",
+                  "pm.test('Rates object is not empty', function () {",
+                  "    pm.expect(Object.keys(pm.response.json().rates).length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('EUR rate exists and is a positive number', function () {",
+                  "    const rates = pm.response.json().rates;",
+                  "    pm.expect(rates).to.have.property('EUR');",
+                  "    pm.expect(rates.EUR).to.be.a('number').and.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET - FX Historical Rate (2024-01-15)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{fx_base_url}}/2024-01-15?from={{base_currency}}&to=EUR,GBP,JPY",
+              "host": ["{{fx_base_url}}"],
+              "path": ["2024-01-15"],
+              "query": [
+                { "key": "from", "value": "{{base_currency}}" },
+                { "key": "to", "value": "EUR,GBP,JPY" }
+              ]
+            },
+            "description": "Get historical exchange rates for January 15, 2024.\n\nExpected: 200 OK with EUR, GBP, and JPY rates for the requested date."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Date matches requested date', function () {",
+                  "    pm.expect(pm.response.json().date).to.eql('2024-01-15');",
+                  "});",
+                  "",
+                  "pm.test('EUR rate exists', function () {",
+                  "    pm.expect(pm.response.json().rates).to.have.property('EUR');",
+                  "});",
+                  "",
+                  "pm.test('GBP rate exists', function () {",
+                  "    pm.expect(pm.response.json().rates).to.have.property('GBP');",
+                  "});",
+                  "",
+                  "pm.test('JPY rate exists', function () {",
+                  "    pm.expect(pm.response.json().rates).to.have.property('JPY');",
+                  "});",
+                  "",
+                  "pm.test('All rates are positive numbers', function () {",
+                  "    const rates = pm.response.json().rates;",
+                  "    Object.values(rates).forEach(function(rate) {",
+                  "        pm.expect(rate).to.be.a('number').and.above(0);",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET - FX Available Currencies",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{fx_base_url}}/currencies",
+              "host": ["{{fx_base_url}}"],
+              "path": ["currencies"]
+            },
+            "description": "Get the complete list of available currencies.\n\nExpected: 200 OK with an object mapping currency codes to currency names."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is a non-empty object', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(Object.keys(json).length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('USD is in the currency list', function () {",
+                  "    pm.expect(pm.response.json()).to.have.property('USD');",
+                  "});",
+                  "",
+                  "pm.test('EUR is in the currency list', function () {",
+                  "    pm.expect(pm.response.json()).to.have.property('EUR');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET - FX Invalid Currency (Error Test)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{fx_base_url}}/latest?from=FAKECURRENCY",
+              "host": ["{{fx_base_url}}"],
+              "path": ["latest"],
+              "query": [{ "key": "from", "value": "FAKECURRENCY" }]
+            },
+            "description": "Negative test: request rates with an invalid currency code.\n\nExpected: non-200 error response with a message field."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid currency returns error status', function () {",
+                  "    pm.expect(pm.response.code).to.not.equal(200);",
+                  "});",
+                  "",
+                  "pm.test('Error response has message field', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FDA Drug API",
+      "item": [
+        {
+          "name": "GET - FDA Drug Adverse Events (aspirin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{fda_base_url}}/drug/event.json?search=patient.drug.medicinalproduct:\"aspirin\"&limit=5",
+              "host": ["{{fda_base_url}}"],
+              "path": ["drug", "event.json"],
+              "query": [
+                { "key": "search", "value": "patient.drug.medicinalproduct:\"aspirin\"" },
+                { "key": "limit", "value": "5" }
+              ]
+            },
+            "description": "Search FAERS (FDA Adverse Event Reporting System) for aspirin-related adverse events.\n\nExpected: 200 OK with results array and meta block containing total count."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has meta and results fields', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('meta');",
+                  "    pm.expect(json).to.have.property('results');",
+                  "});",
+                  "",
+                  "pm.test('Results array is not empty', function () {",
+                  "    pm.expect(pm.response.json().results.length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Total count is a positive number', function () {",
+                  "    pm.expect(pm.response.json().meta.results.total).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Each result has a safetyreportid', function () {",
+                  "    pm.response.json().results.forEach(function(r) {",
+                  "        pm.expect(r).to.have.property('safetyreportid');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET - FDA Drug Recalls",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{fda_base_url}}/drug/enforcement.json?limit=5",
+              "host": ["{{fda_base_url}}"],
+              "path": ["drug", "enforcement.json"],
+              "query": [{ "key": "limit", "value": "5" }]
+            },
+            "description": "Get the most recent drug enforcement actions (recalls).\n\nExpected: 200 OK with results containing recall_number, classification, and product_description."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Results array exists and is not empty', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.results).to.be.an('array');",
+                  "    pm.expect(json.results.length).to.be.above(0);",
+                  "});",
+                  "",
+                  "pm.test('Each recall has required fields', function () {",
+                  "    pm.response.json().results.forEach(function(recall) {",
+                  "        pm.expect(recall).to.have.property('recall_number');",
+                  "        pm.expect(recall).to.have.property('status');",
+                  "        pm.expect(recall).to.have.property('classification');",
+                  "        pm.expect(recall).to.have.property('product_description');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Classification is a valid FDA class', function () {",
+                  "    const validClasses = ['Class I', 'Class II', 'Class III'];",
+                  "    pm.response.json().results.forEach(function(recall) {",
+                  "        pm.expect(validClasses).to.include(recall.classification);",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

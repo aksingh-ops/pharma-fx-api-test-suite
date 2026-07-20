@@ -1,0 +1,28 @@
+{
+  "id": "pharma-fx-api-environment",
+  "name": "API Testing Environment",
+  "values": [
+    {
+      "key": "fda_base_url",
+      "value": "https://api.fda.gov",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "fx_base_url",
+      "value": "https://api.frankfurter.app",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "base_currency",
+      "value": "USD",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "info": {
+    "description": "Environment variables for pharma-fx-api-test-suite.\nSet base_currency to any valid ISO 4217 code to test different base currencies."
+  }
+}
