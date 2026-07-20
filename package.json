@@ -1,0 +1,28 @@
+{
+  "name": "pharma-fx-api-test-suite",
+  "version": "1.0.0",
+  "description": "Automated API test suite for FDA Drug API and Frankfurter FX API using Playwright and TypeScript",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:report": "npx playwright test --reporter=html",
+    "test:fx": "npx playwright test tests/api/fx-rates.spec.ts",
+    "test:fda": "npx playwright test tests/api/fda-drugs.spec.ts",
+    "postman:run": "npx newman run postman/pharma-fx-collection.json -e postman/api-testing-environment.json"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "newman": "^6.1.0",
+    "typescript": "^5.4.5"
+  },
+  "keywords": [
+    "playwright",
+    "typescript",
+    "api-testing",
+    "fda",
+    "postman",
+    "automation",
+    "ci-cd"
+  ],
+  "author": "Akash Singh",
+  "license": "MIT"
+}
